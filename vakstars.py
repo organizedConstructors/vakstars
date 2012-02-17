@@ -7,6 +7,10 @@ import sys
 import sqlite3
 # from datetime import date
 
+# TODO: normális dátum kezelés
+# TODO: paraméterek ellenőrzése
+# TODO: batch kezelés
+
 db = None
 c = None
 plus_sender = 2
