@@ -17,7 +17,7 @@ minus_receiver = -2
 def prepare_db():
     """Prepares the database: connect, prepare cursor"""
     global db, c
-    db = sqlite3.connect('vakstars')
+    db = sqlite3.connect('vakstars.sqlite')
     db.row_factory = sqlite3.Row
     c = db.cursor()
 
@@ -141,7 +141,6 @@ def get_vote_log():
 def vote_log_to_log_table_html(vote_log):
     """Returns the log table in HTML."""
     for row in reversed(vote_log['vote_log']):
-        typesign = None
         if row["type"] == 1:
             typesign = "+"
         else:
@@ -190,7 +189,7 @@ if __name__ == "__main__":
     vakstars.py vote <+|-> <kitől> <kinek> <dátum> <indoklás>
     vakstars.py dump-log-table
     vakstars.py dump-points-table
-        """);
+        """)
     else:
         process = sys.argv[1]
 
