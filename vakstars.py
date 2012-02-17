@@ -89,16 +89,22 @@ def profile_name_by_id(id):
             """, {'id': id})
     return c.fetchone()['name']
 
-def vote(sender, receiver, date, reason, type = "1"):
-    """Files a vote."""
-    global c, db
-    c.execute("""
-        INSERT INTO votes(sender, receiver, date, reason, type)
-        VALUES (:sender, :receiver, :date, :reason, :type)
-        """,
-        {'sender': sender, 'receiver': receiver,
-         'date': date, 'reason': reason, 'type': type})
-    db.commit()
+def vote(sender, receivers, date, reason, type = "1"):
+    """File(s) vote(s).
+
+    If the receiver is iterable, everyone in the list will receive a vote.
+    """
+    if hasattr(receivers, '__iter__'):
+        [vote(sender, receiver, date, reason, type) for receiver in receivers]
+    else:
+        global c, db
+        c.execute("""
+            INSERT INTO votes(sender, receiver, date, reason, type)
+            VALUES (:sender, :receiver, :date, :reason, :type)
+            """,
+            {'sender': sender, 'receiver': receivers,
+             'date': date, 'reason': reason, 'type': type})
+        db.commit()
 
 def get_vote_log():
     """Creates vote log dict from db."""
@@ -191,6 +197,7 @@ if __name__ == "__main__":
         print("""Használat:
     vakstars.py register <név> <dátum>
     vakstars.py vote <+|-> <kitől> <kinek> <dátum> <indoklás>
+    vakstars.py vote <+|-> <kitől> [ <fogadó1> <fogadó2> ... ] <dátum> <indoklás>
     vakstars.py dump-log-table
     vakstars.py dump-points-table
         """)
@@ -221,10 +228,31 @@ if __name__ == "__main__":
                 type = 1
             if sys.argv[2] == "-":
                 type = -1
-            vote(
-                profile_id_by_name(sys.argv[3].decode('utf-8')),
-                profile_id_by_name(sys.argv[4].decode('utf-8')),
-                sys.argv[5].decode('utf-8'), sys.argv[6].decode('utf-8'),
-                type
-            )
+
+            sender = profile_id_by_name(sys.argv[3].decode('utf-8'))
+            if sys.argv[4] != "[":
+                receivers = profile_id_by_name(sys.argv[4].decode('utf-8'))
+                argument_continue = 5
+            else:
+                found = False
+                found_at = 0
+                i = 5
+                while (not found) and (i < len(sys.argv)):
+                    if sys.argv[i] == ']':
+                        found_at = i
+                        found = True
+                    i += 1
+                if not found:
+                    raise Exception('Szintaxishiba: nincsen lezárva a lista!')
+                elif found_at == 5:
+                    raise Exception('Szintaxishiba: nincsen fogadó fél a listában!')
+                else:
+                    receivers = sys.argv[5 : found_at]
+                    receivers = [profile_id_by_name(s.decode('utf-8')) for s in receivers]
+                    argument_continue = found_at + 1
+
+            date = sys.argv[argument_continue].decode('utf-8')
+            reason = sys.argv[argument_continue + 1].decode('utf-8')
+
+            vote(sender, receivers, date, reason,type)
             leave_db()
