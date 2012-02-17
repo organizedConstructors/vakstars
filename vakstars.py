@@ -28,6 +28,9 @@ def leave_db():
 def insert_profile(name, startdate):
     """Inserts a new profile."""
     # TODO: set a sensible startdate as default
+    # Check for minimum length
+    if len(name) < 3:
+        raise Exception('Túl rövid a név!')
     global c, db
     c.execute("""
         INSERT INTO profiles(name, startdate)
@@ -181,36 +184,44 @@ def vote_log_to_points_table_html(vote_log):
         previous = profile[1]
 
 if __name__ == "__main__":
-    process = sys.argv[1]
+    if len(sys.argv) == 1:
+        print("""Használat:
+    vakstars.py register <név> <dátum>
+    vakstars.py vote <+|-> <kitől> <kinek> <dátum> <indoklás>
+    vakstars.py dump-log-table
+    vakstars.py dump-points-table
+        """);
+    else:
+        process = sys.argv[1]
 
-    if process == "dump-log-table":
-        prepare_db()
-        vl = get_vote_log()
-        vote_log_to_log_table_html(vl)
-        leave_db()
+        if process == "dump-log-table":
+            prepare_db()
+            vl = get_vote_log()
+            vote_log_to_log_table_html(vl)
+            leave_db()
 
-    if process == "dump-points-table":
-        prepare_db()
-        vl = get_vote_log()
-        vote_log_to_points_table_html(vl)
-        leave_db()
+        if process == "dump-points-table":
+            prepare_db()
+            vl = get_vote_log()
+            vote_log_to_points_table_html(vl)
+            leave_db()
 
-    if process == "register":
-        prepare_db()
-        insert_profile(sys.argv[2].decode('utf-8'), sys.argv[3].decode('utf-8'))
-        leave_db()
+        if process == "register":
+            prepare_db()
+            insert_profile(sys.argv[2].decode('utf-8'), sys.argv[3].decode('utf-8'))
+            leave_db()
 
-    if process == "vote":
-        prepare_db()
-        type = None
-        if sys.argv[2] == "+":
-            type = 1
-        if sys.argv[2] == "-":
-            type = -1
-        vote(
-            profile_id_by_name(sys.argv[3].decode('utf-8')),
-            profile_id_by_name(sys.argv[4].decode('utf-8')),
-            sys.argv[5].decode('utf-8'), sys.argv[6].decode('utf-8'),
-            type
-        )
-        leave_db()
+        if process == "vote":
+            prepare_db()
+            type = None
+            if sys.argv[2] == "+":
+                type = 1
+            if sys.argv[2] == "-":
+                type = -1
+            vote(
+                profile_id_by_name(sys.argv[3].decode('utf-8')),
+                profile_id_by_name(sys.argv[4].decode('utf-8')),
+                sys.argv[5].decode('utf-8'), sys.argv[6].decode('utf-8'),
+                type
+            )
+            leave_db()
