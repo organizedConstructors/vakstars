@@ -148,9 +148,21 @@ def get_vote_log():
         votelog.append(vote)
     return {'vote_log': votelog, 'points': points}
 
+html_escape_table = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&apos;",
+    ">": "&gt;",
+    "<": "&lt;",
+    }
+
+def html_escape(text):
+    """Produce entities within text."""
+    return "".join(html_escape_table.get(c,c) for c in text)
+
 def vote_log_to_log_table_html(vote_log):
     """Returns the log table in HTML."""
-    for row in reversed(vote_log['vote_log']):
+    for row in reversed(vote_log['vote_log'][-100:]):
         if row["type"] == 1:
             typesign = "+"
         else:
@@ -170,7 +182,7 @@ def vote_log_to_log_table_html(vote_log):
             receiver = profile_name_by_id(row["receiver"]).encode('utf-8'),
             receiver_points_before = row["receiver_points_before"],
             receiver_points_after = row["receiver_points_after"],
-            reason = row['reason'].encode('utf-8')
+            reason = html_escape(row['reason'].encode('utf-8'))
         ))
 
 def vote_log_to_points_table_html(vote_log):
