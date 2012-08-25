@@ -92,7 +92,7 @@ def profile_name_by_id(id):
 def vote(sender, receivers, date, reason, type = "1"):
     """File(s) vote(s).
 
-    If the receiver is iterable, everyone in the list will receive a vote.
+    If the receivers is iterable, everyone in the list will receive a vote.
     """
     if hasattr(receivers, '__iter__'):
         [vote(sender, receiver, date, reason, type) for receiver in receivers]
@@ -204,41 +204,38 @@ def vote_log_to_points_table_html(vote_log):
         ))
         previous = profile[1]
 
-if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        print("""Használat:
+def help():
+    print("""Használat:
     vakstars.py register <név> <dátum>
     vakstars.py vote <+|-> <kitől> <kinek> <dátum> <indoklás>
     vakstars.py vote <+|-> <kitől> [ <fogadó1> <fogadó2> ... ] <dátum> <indoklás>
     vakstars.py dump-log-table
     vakstars.py dump-points-table
         """)
+
+def select_operation(operation):
+    operations = ['dump-log-table', 'dump-points-table', 'register', 'vote']
+    if operation not in operations:
+        raise Exception('Ilyen műveletünk nincs is!')
     else:
-        process = sys.argv[1]
+        prepare_db()
+        if operation == "dump-log-table":
+            vote_log_to_log_table_html(get_vote_log())
 
-        if process == "dump-log-table":
-            prepare_db()
-            vl = get_vote_log()
-            vote_log_to_log_table_html(vl)
-            leave_db()
+        if operation == "dump-points-table":
+            vote_log_to_points_table_html(get_vote_log())
 
-        if process == "dump-points-table":
-            prepare_db()
-            vl = get_vote_log()
-            vote_log_to_points_table_html(vl)
-            leave_db()
+        if operation == "register":
+            name = sys.argv[2].decode('utf-8')
+            date = sys.argv[3].decode('utf-8')
+            insert_profile(name, date)
 
-        if process == "register":
-            prepare_db()
-            insert_profile(sys.argv[2].decode('utf-8'), sys.argv[3].decode('utf-8'))
-            leave_db()
-
-        if process == "vote":
-            prepare_db()
+        if operation == "vote":
             type = None
-            if sys.argv[2] == "+":
+            sign = sys.argv[2]
+            if sign == "+":
                 type = 1
-            if sys.argv[2] == "-":
+            if sign == "-":
                 type = -1
 
             sender = profile_id_by_name(sys.argv[3].decode('utf-8'))
@@ -248,7 +245,8 @@ if __name__ == "__main__":
             else:
                 found = False
                 found_at = 0
-                i = 5
+                starting_parameter_index = 5
+                i = starting_parameter_index
                 while (not found) and (i < len(sys.argv)):
                     if sys.argv[i] == ']':
                         found_at = i
@@ -256,10 +254,10 @@ if __name__ == "__main__":
                     i += 1
                 if not found:
                     raise Exception('Szintaxishiba: nincsen lezárva a lista!')
-                elif found_at == 5:
+                elif found_at == starting_parameter_index:
                     raise Exception('Szintaxishiba: nincsen fogadó fél a listában!')
                 else:
-                    receivers = sys.argv[5 : found_at]
+                    receivers = sys.argv[starting_parameter_index : found_at]
                     receivers = [profile_id_by_name(s.decode('utf-8')) for s in receivers]
                     argument_continue = found_at + 1
 
@@ -267,4 +265,14 @@ if __name__ == "__main__":
             reason = sys.argv[argument_continue + 1].decode('utf-8')
 
             vote(sender, receivers, date, reason,type)
-            leave_db()
+
+        leave_db()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        help()
+    else:
+        process = sys.argv[1]
+
+        select_operation(process)
