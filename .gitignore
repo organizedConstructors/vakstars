@@ -1,3 +1,6 @@
-.pyc
 .idea
-.sqlite
+__pycache__
+*.pyc
+*.sqlite
+*.bak
+
