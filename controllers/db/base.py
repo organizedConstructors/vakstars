@@ -2,7 +2,7 @@
 
 __author__ = 'nezuvian';
 
-class baseController:
+class base_controller:
     """
     Abstract controller base class
     """
