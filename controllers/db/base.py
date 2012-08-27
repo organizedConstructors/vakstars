@@ -11,7 +11,7 @@ class base_controller:
     def create_user(self):
         pass
 
-    def read_User(self, id):
+    def read_user(self, id):
         pass
 
     def update_user(self, id):
