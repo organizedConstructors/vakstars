@@ -7,6 +7,9 @@ class base_controller:
     Abstract controller base class
     """
 
+    class CannotInstantiate(Exception):
+        pass
+
 #    User handling
     def create_user(self):
         pass
