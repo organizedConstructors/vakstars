@@ -11,13 +11,13 @@ class base_controller:
         pass
 
 #    User handling
-    def create_user(self):
+    def create_user(self, nickname):
         pass
 
     def read_user(self, id):
         pass
 
-    def update_user(self, id):
+    def update_user(self, id, data):
         pass
 
     def delete_user(self, id):

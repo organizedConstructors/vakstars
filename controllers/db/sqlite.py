@@ -5,24 +5,100 @@ __author__ = 'nezuvian';
 import base
 import sys
 import sqlite3
+import datetime
 
 class sqlite_controller(base.base_controller):
     """
     Controller for sqlite connection
     """
 
+    con = None
+    cur = None
+    db = None
+
+    def __init__(self, database_name):
+        global con, cur, db
+
+        try:
+            con = sqlite3.connect(database_name)
+            cur = con.cursor()
+        except sqlite3.Error, e:
+            # todo: log to file
+            print "Error %s:" % e.args[0]
+
+    def __del__(self):
+        if con:
+            con.close()
+
     #    User handling
-    def create_user(self):
-        pass
+    def create_user(self, nickname):
+        global con, cur, db
+        now = datetime.datetime.now()
+
+        try:
+            cur.execute("""
+                        INSERT INTO users(nickname, created_at, updated_at)
+                        VALUES(:nickname, :now, :now
+                        """,
+                        {'nickname': nickname, 'now': now}
+            )
+            con.commit()
+            return true
+        except sqlite3.Error, e:
+            # todo log to file
+#            print "Error %s:" % e.args[0]
+            return false
 
     def read_user(self, id):
-        pass
+        global con, cur, db
 
-    def update_user(self, id):
-        pass
+        try:
+            cur.execute("""
+                        SELECT * FROM users WHERE users.id = :id
+                        """,
+                        {'id', id}
+            )
+            user = cur.fetchone()
+        except sqlite3.Error, e:
+            # todo log to file
+            return false
+
+        return user
+
+
+    def update_user(self, id, data):
+        global con, cur, db
+
+        keys = list(data.keys())
+        query = "UPDATE users SET "
+        for key in keys:
+            query = query+key+"="+data[key]
+
+        query = query+" WHERE users.id=:id"
+
+        try:
+            cur.execute(query, {'id': id})
+            con.commit()
+            return true
+        except sqlite3.Error, e:
+            # todo log to file
+            return false
 
     def delete_user(self, id):
-        pass
+        global con, cur, db
+
+        try:
+            cur.execute("""
+                        DELETE FROM users WHERE users.id = :id
+                        """,
+                    {'id': id}
+            )
+            con.commit()
+            return true
+        except sqlite3.Error, e:
+        # todo log to file
+        #            print "Error %s:" % e.args[0]
+            return false
 
     #   UserInformations handling
     def create_user_information(self, user_id):
