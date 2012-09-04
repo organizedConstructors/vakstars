@@ -2,6 +2,7 @@
 
 import sys
 import sqlite3
+import argparse
 # from datetime import date
 
 # TODO: normális dátum kezelés
@@ -267,6 +268,29 @@ def select_operation(operation):
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest = "command", help='commands')
+
+    vote_parser = subparsers.add_parser("vote", help="szavazás")
+    vote_parser.add_argument("type", help=" <-- típus választás", choices=['+', '-'])
+    vote_parser.add_argument("sender", help="<-- küldő neve", type=str) 
+    vote_parser.add_argument("receiver", help="<-- fogadó neve", type=str, nargs='+')
+    vote_parser.add_argument("date", help="<-- mai dátum (pl. \"2012. 06. 07.\")", type=str)
+    vote_parser.add_argument("reason", help="<-- indoklás", type=str)
+
+    register_parser = subparsers.add_parser("register", help="új tag regisztrálása")
+    register_parser.add_argument("name", help="<-- új tag neve")
+    register_parser.add_argument("date", help="<-- mai dátum (pl. \"2012. 06. 07.\")")
+
+    delete_votes_by_id = subparsers.add_parser("delete_votes_by_id", help="szavazatok törlése azonosító alapján")
+    delete_votes_by_id.add_argument("id", help="<-- tag azonosítója", type=int)
+
+    delete_profile = subparsers.add_parser("delete_profile", help="tag törlése azonosító alapján")
+    delete_votes_by_id.add_argument("id", help="<-- tag azonosítója", type=int)
+	
+    args = parser.parse_args()
+
     if len(sys.argv) == 1:
         help()
     else:
