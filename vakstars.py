@@ -204,17 +204,50 @@ def vote_log_to_points_table_html(vote_log):
         ))
         previous = profile[1]
 
+def import_tsv(filename):
+    import csv
+    with open(filename, 'rb') as tsvfile:
+        tsvreader = csv.reader(tsvfile, delimiter='\t')
+        tsvreader.next()
+        names = []
+        for row in tsvreader:
+            names.append(row[0])
+            names.append(row[1])
+        nameset = set(names)
+        unregistered = []
+        for name in nameset:
+            if profile_id_by_name(name.decode('utf-8')) is None:
+                unregistered.append(name)
+        if len(unregistered) > 0:
+            print("A következők nem szerepelnek az adatbázisban, manuálisan kell őket regisztránod:")
+            for name in unregistered:
+                print(name)
+        else:
+            tsvfile.seek(0)
+            tsvreader.next()
+            votes = 0
+            for row in tsvreader:
+                sender = profile_id_by_name(row[0].decode('utf-8'))
+                receiver = profile_id_by_name(row[1].decode('utf-8'))
+                reason = row[2].decode('utf-8')
+                date = row[3].decode('utf-8')
+                vote(sender, receiver, date, reason)
+                votes += 1
+            print("Sikeresen felvittem {number_of_votes} szavazatot.".format(number_of_votes=votes))
+
+
 def help():
     print("""Használat:
     vakstars.py register <név> <dátum>
     vakstars.py vote <+|-> <kitől> <kinek> <dátum> <indoklás>
     vakstars.py vote <+|-> <kitől> [ <fogadó1> <fogadó2> ... ] <dátum> <indoklás>
+    vakstars.py tsv-import <.tsv fájl>
     vakstars.py dump-log-table
     vakstars.py dump-points-table
         """)
 
 def select_operation(operation):
-    operations = ['dump-log-table', 'dump-points-table', 'register', 'vote']
+    operations = ['dump-log-table', 'dump-points-table', 'register', 'vote', 'tsv-import']
     if operation not in operations:
         raise Exception('Ilyen műveletünk nincs is!')
     else:
@@ -229,6 +262,10 @@ def select_operation(operation):
             name = sys.argv[2].decode('utf-8')
             date = sys.argv[3].decode('utf-8')
             insert_profile(name, date)
+
+        if operation == "tsv-import":
+            filename = sys.argv[2].decode('utf-8')
+            import_tsv(filename)
 
         if operation == "vote":
             type = None
