@@ -297,7 +297,7 @@ def select_operation(operation):
 
         if operation == "register":
             name = sys.argv[2].decode('utf-8')
-            date = sys.argv[3].decode('utf-8')
+            date = natural_date_to_sql_datestring(sys.argv[3].decode('utf-8'))
             insert_profile(name, date)
 
         if operation == "tsv-import":
@@ -335,7 +335,7 @@ def select_operation(operation):
                     receivers = [profile_id_by_name(s.decode('utf-8')) for s in receivers]
                     argument_continue = found_at + 1
 
-            date = sys.argv[argument_continue].decode('utf-8')
+            date = natural_date_to_sql_datestring(sys.argv[argument_continue].decode('utf-8'))
             reason = sys.argv[argument_continue + 1].decode('utf-8')
 
             vote(sender, receivers, date, reason, type)
