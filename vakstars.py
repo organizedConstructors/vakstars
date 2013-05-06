@@ -116,7 +116,7 @@ def vote(sender, receivers, date, reason, type="1"):
                    'date': date, 'reason': reason, 'type': type})
         db.commit()
 
-def get_vote_log(start_date, end_date):
+def get_vote_log(start_date=None, end_date=None):
     """Creates vote log dict from db."""
     global c, db
 
